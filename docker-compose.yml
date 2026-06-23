@@ -9,6 +9,10 @@ services:
     env_file:
       - .env
 
+    volumes:
+    - ./app/uploads:/app/uploads
+    - ./app/processed:/app/processed
+
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,3 +41,21 @@ services:
 
     ports:
       - "6379:6379"
+
+  worker:
+    build: .
+
+    command: celery -A app.workers.celery_worker.celery_app worker --loglevel=info
+
+    env_file:
+      - .env
+
+    volumes:
+    - ./app/uploads:/app/uploads
+    - ./app/processed:/app/processed
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
