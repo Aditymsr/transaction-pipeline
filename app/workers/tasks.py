@@ -118,8 +118,18 @@ def process_csv(job_id, file_path):
         # ANOMALY DETECTION
         # --------------------
 
+        USD_TO_INR = 83.0
+
+        df["normalized_amount"] = df.apply(
+            lambda row:
+                row["amount"] * USD_TO_INR
+                if str(row["currency"]).upper() == "USD"
+                else row["amount"],
+            axis=1
+        )
+
         account_medians = (
-            df.groupby("account_id")["amount"]
+            df.groupby("account_id")["normalized_amount"]
             .median()
             .to_dict()
         )
@@ -144,7 +154,7 @@ def process_csv(job_id, file_path):
             is_anomaly = False
             anomaly_reason = None
 
-            if row["amount"] > (3 * median_amount):
+            if row["normalized_amount"] > (3 * median_amount):
 
                 is_anomaly = True
 
