@@ -283,3 +283,61 @@ def get_results(
         "filename": job.filename,
         "status": job.status
     }
+
+from fastapi.responses import StreamingResponse
+from io import StringIO
+import csv
+
+@router.get("/jobs/{job_id}/anomalies/download")
+def download_anomalies_csv(
+    job_id: int,
+    db: Session = Depends(get_db)
+):
+
+    anomalies = (
+        db.query(Transaction)
+        .filter(
+            Transaction.job_id == job_id,
+            Transaction.is_anomaly == True
+        )
+        .all()
+    )
+
+    if not anomalies:
+        raise HTTPException(
+            status_code=404,
+            detail="No anomalies found"
+        )
+
+    output = StringIO()
+
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "txn_id",
+        "merchant",
+        "amount",
+        "currency",
+        "anomaly_reason"
+    ])
+
+    for tx in anomalies:
+
+        writer.writerow([
+            tx.txn_id,
+            tx.merchant,
+            tx.amount,
+            tx.currency,
+            tx.anomaly_reason
+        ])
+
+    output.seek(0)
+
+    return StreamingResponse(
+        output,
+        media_type="text/csv",
+        headers={
+            "Content-Disposition":
+            f"attachment; filename=anomalies_job_{job_id}.csv"
+        }
+    )

@@ -276,13 +276,15 @@ cd transaction-pipeline
 
 ### Create Environment File
 
-Create .env
+POSTGRES_DB=transactions_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
 
 DATABASE_URL=postgresql://postgres:postgres@postgres:5432/transactions_db
 
 REDIS_URL=redis://redis:6379/0
 
-GEMINI_API_KEY=YOUR_API_KEY
+GEMINI_API_KEY=your_api_key_here
 
 ---
 
