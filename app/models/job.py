@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime
+from datetime import datetime
 
 from app.database.database import Base
 
@@ -14,6 +15,26 @@ class Job(Base):
         String,
         nullable=False,
         default="pending"
+    )
+
+    row_count_raw = Column(
+        Integer,
+        nullable=True
+    )
+
+    row_count_clean = Column(
+        Integer,
+        nullable=True
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+    completed_at = Column(
+        DateTime,
+        nullable=True
     )
 
     processed_filename = Column(

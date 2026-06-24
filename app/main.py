@@ -2,6 +2,8 @@ from fastapi import FastAPI
 
 from app.database.database import Base, engine
 import app.models.job
+import app.models.transaction
+import app.models.job_summary
 
 from app.api.jobs import router as jobs_router
 
