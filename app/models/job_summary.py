@@ -50,3 +50,8 @@ class JobSummary(Base):
         String,
         nullable=True
     )
+
+    summary_source = Column(
+        String,
+        nullable=True
+    )

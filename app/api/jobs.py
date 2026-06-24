@@ -235,7 +235,10 @@ def get_results(
 
             "risk_level":
                 summary.risk_level
-                if summary else ""
+                if summary else "",
+            
+            "summary_source": 
+                summary.summary_source
         },
 
         "category_breakdown":

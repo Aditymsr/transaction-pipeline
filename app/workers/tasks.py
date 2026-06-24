@@ -380,6 +380,7 @@ def process_csv(job_id, file_path):
 
             try:
 
+                print("SUMMARY RESPONSE:", summary_response)
                 summary_response = generate_summary(
                     {
                         "total_spend_inr": total_inr,
@@ -388,6 +389,7 @@ def process_csv(job_id, file_path):
                         "anomaly_count": anomaly_count
                     }
                 )
+                print("SUMMARY RESPONSE:", summary_response)
 
                 break
 
@@ -406,26 +408,40 @@ def process_csv(job_id, file_path):
 
         if not summary_response:
 
-            job.completed_at = datetime.utcnow()
-            
-            job.status = "completed"
+            print("Gemini unavailable. Creating fallback summary.")
 
-            db.commit()
+            summary_source = "fallback"
 
-            return True
+            summary_json = {
+                "total_spend_inr": total_inr,
+                "total_spend_usd": total_usd,
+                "top_merchants": top_merchants,
+                "anomaly_count": anomaly_count,
+                "narrative": (
+                    f"Processed {clean_count} transactions. "
+                    f"Detected {anomaly_count} anomalies."
+                ),
+                "risk_level": (
+                    "high"
+                    if anomaly_count >= 5
+                    else "medium"
+                    if anomaly_count >= 2
+                    else "low"
+                )
+            }
 
-        summary_response = (
-            summary_response
-            .replace("```json", "")
-            .replace("```", "")
-            .strip()
-        )
+        else:
+            summary_source = "gemini"
 
-        print("RAW SUMMARY RESPONSE")
-        print(summary_response)
-        summary_json = json.loads(
-            summary_response
-        )
+            summary_response = (
+                summary_response
+                .replace("```json", "")
+                .replace("```", "")
+                .strip()
+            )
+
+            summary_json = json.loads(summary_response)
+
 
         job_summary = JobSummary(
 
@@ -447,7 +463,9 @@ def process_csv(job_id, file_path):
             summary_json["narrative"],
 
             risk_level=
-            summary_json["risk_level"]
+            summary_json["risk_level"],
+
+            summary_source=summary_source
         )
 
         db.add(job_summary)
